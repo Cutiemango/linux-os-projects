@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <link.h>
 #include <linux/kernel.h>
 #include <sys/syscall.h>
@@ -57,12 +56,12 @@ static int callback(struct dl_phdr_info *info, size_t size, void *data) {
         info_buf->library_addrs[info_buf->library_num][1] = end;
         info_buf->library_num++;
 
-        printf("%016lx-%016lx ", start, end);
-        print_flags(&info->dlpi_phdr[i]);
-		printf(" %08lx   %s", end - start, seg_name);
-        putchar('\n');
+        //printf("%016lx-%016lx ", start, end);
+        //print_flags(&info->dlpi_phdr[i]);
+	//printf(" %08lx   %s", end - start, seg_name);
+        //putchar('\n');
     }
-	putchar('\n');
+    //putchar('\n');
     return 0;
 }
 
@@ -75,20 +74,13 @@ int main()
     struct seg_info* info = (struct seg_info*) malloc(sizeof(struct seg_info));
     memset(info->library_addrs, 0, 2 * LIB_ADDR_BUF_SIZE * sizeof(unsigned long));
     info->library_num = 0;
-
-    pthread_attr_t attr;
-    void* stackaddr;
-    size_t stacksize;
-    pthread_getattr_np(pthread_self(), &attr);
-    pthread_attr_getstack(&attr, &stackaddr, &stacksize);
-    printf("Thread stackaddr = %p, stacksize = %ld\n", stackaddr, stacksize);
     
     dl_iterate_phdr(callback, info);
 
     long int ret = syscall(SYSCALL_HELLO, info);
     show_info(info);
 
-    sleep(5);
+    sleep(3);
 
     free(info);
     return 0;
@@ -96,6 +88,7 @@ int main()
 
 void show_info(struct seg_info *info)
 {
+    printf("====[ User Space (Physical Address) ]====\n");
     printf("Task [%d, %d]:\n", info->pid, info->tgid);
     printf("total vm: %ld\n", info->total_vm);
     printf("data segment: [%016lx ~ %016lx]\n", info->start_data, info->end_data);
@@ -108,5 +101,5 @@ void show_info(struct seg_info *info)
         char* name = info->library_name[i];
         printf("- [%016lx - %016lx]     %s\n", addr[0], addr[1], name);
     }
-    printf("=========\n\n");
+    printf("=========================================\n\n");
 }
