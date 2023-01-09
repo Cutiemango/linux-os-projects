@@ -35,7 +35,7 @@ void main()
         }
     }
 
-    int ret = syscall(SYSCALL_ENDCSCOUNT, &a);
+    ret = syscall(SYSCALL_ENDCSCOUNT, &a);
     if (ret != 0) {
         printf("Something went wrong while executing the syscall!\n");
     }
